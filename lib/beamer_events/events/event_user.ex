@@ -12,7 +12,7 @@ defmodule BeamerEvents.Events.EventUser do
   @doc false
   def changeset(event_user, attrs) do
     event_user
-    |> cast(attrs, [:user_id])
-    |> validate_required([:user_id])
+    |> cast(attrs, [:user_id, :event_id])
+    |> validate_required([:user_id, :event_id])
   end
 end

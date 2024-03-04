@@ -2,33 +2,14 @@ defmodule BeamerEventsWeb.EventController do
   use BeamerEventsWeb, :controller
   alias BeamerEvents.Events
 
-  import Ecto.Query, warn: false
-  alias BeamerEvents.Repo
 
   def event_analytics(conn, params) do
     event_name = params["event_name"]
-    from_date = params["from_date"]
-    to_date = params["to_date"]
-
-
-    # Replace this with your actual database query
-    event_counts = BeamerEvents.Events.Event
-                    |> where([e], e.timestamp >= ^from_date and e.timestamp <= ^to_date)
-                    |> where([e], ^event_name in [nil, e.name]) # Filter by event_name if provided
-                    |> group_by([e], fragment("date_trunc('day', ?)", e.timestamp))
-                    |> select([e], %{date: fragment("date_trunc('day', ?)", e.timestamp), count: count(e.id), unique_count: count(e.user_id)})
-                    |> order_by([e], fragment("date_trunc('day', ?)", e.timestamp))
-                    |> Repo.all()
+    from_date = params["from"] |> Date.from_iso8601!()
+    to_date = params["to"] |> Date.from_iso8601!()
 
     # Format the data
-    formatted_data =
-      Enum.map(event_counts, fn %{date: date, count: count, unique_count: unique_count} ->
-        %{
-          "date" => date,
-          "count" => count,
-          "unique_count" => unique_count
-        }
-      end)
+    formatted_data = Events.list_event_analytics(to_date,from_date,event_name)
 
     # Return the data
     conn
@@ -40,8 +21,6 @@ defmodule BeamerEventsWeb.EventController do
 
   def create_event(conn, params) do
     params  = update_params(params)
-
-
     {:ok, event} = Events.create_event(params)
     {:ok, _eventuser} = Events.create_event_user(%{event_id: event.id, user_id: params["user_id"] })
 
@@ -54,7 +33,13 @@ defmodule BeamerEventsWeb.EventController do
   end
 
   def update_params(params) do
-    if Map.get(params, "event_time") == nil or Map.get(params, "event_time") == "" do
+    params =
+        params
+        |> Map.put("name", params["event_name"])
+        |> Map.put("start_time", params["event_time"])
+        |> Map.put("plan", params["attributes"]["plan"])
+        |> Map.put("billing_interval", params["attributes"]["billing_interval"])
+    if Map.get(params, "start_time") == nil or Map.get(params, "start_time") == "" do
       updated_params = Map.put(params, "start_time", DateTime.utc_now())
       updated_params
     else

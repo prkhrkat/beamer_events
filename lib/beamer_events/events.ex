@@ -5,7 +5,6 @@ defmodule BeamerEvents.Events do
 
   import Ecto.Query, warn: false
   alias BeamerEvents.Repo
-
   alias BeamerEvents.Events.Event
 
 
@@ -200,22 +199,21 @@ defmodule BeamerEvents.Events do
   end
 
   def list_all_events() do
-    query = from e in Event,
-        join: eu in EventUser, on: e.id == eu.event_id,
+    query = from eu in EventUser,
         group_by: eu.user_id,
         select: %{
           user_id: eu.user_id,
-          last_event_at: max(e.inserted_at),
+          last_event_at: max(eu.inserted_at),
           event_count: count("*")
         },
-        order_by: [desc: max(e.inserted_at)]
+        order_by: [desc: max(eu.inserted_at)]
 
     Repo.all(query)
   end
 
   def list_events(event_name) do
-    query = from e in Event,
-        join: eu in EventUser, on: e.id == eu.event_id,
+    query = from eu in EventUser,
+        inner_join: e in Event, on: e.id == eu.event_id,
         where: e.name == ^event_name,
         group_by: eu.user_id,
         select: %{
@@ -225,6 +223,25 @@ defmodule BeamerEvents.Events do
         },
         order_by: [desc: max(e.inserted_at)]
 
+    Repo.all(query)
+
+  end
+
+  def list_event_analytics(to_date, from_date, event_name) do
+
+    {:ok,from_date} = NaiveDateTime.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
+    {:ok,to_date} = NaiveDateTime.new(to_date.year, to_date.month, to_date.day, 0, 0, 0)
+
+    query = from eu in EventUser,
+        inner_join: e in Event, on: e.id == eu.event_id,
+        where: e.name in [^event_name] and e.start_time > ^from_date and
+        e.start_time < ^to_date,
+        group_by: fragment("date_trunc('day', ?)", e.start_time),
+        select: %{
+          date: fragment("date_trunc('day', ?)", e.start_time),
+          count: count("*"),
+          unique_count: count(eu.user_id)
+        }
     Repo.all(query)
 
   end

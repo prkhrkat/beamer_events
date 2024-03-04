@@ -10,6 +10,14 @@ defmodule BeamerEventsWeb.UserController do
         Events.list_all_events()
       end
 
+    events = events |> Enum.map(fn event ->
+        %{
+          user_id: event.user_id,
+          last_event_at: event.last_event_at,
+          event_count: event.event_count
+        }
+      end)
+
     conn
     |> put_status(200)
     |> json(%{
