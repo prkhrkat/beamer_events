@@ -7,12 +7,28 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+APIs ( can be called from terminal )
 
-## Learn more
+1. Post API to send events
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+      curl --location 'http://localhost:4000/api/v1/events' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "user_id": "user1",
+        "event_time": "2024-02-28T12:34:56Z",
+        "event_name": "subscription_activated",
+        "attributes": {
+          "plan": "pro",
+          "billing_interval": "year"
+        }
+      }'
+
+
+2. GET API for user analytics
+
+      curl --location 'http://localhost:4000/api/v1/user_analytics?event_name=subscription_activated'
+
+
+3. GET API for event analytics
+
+      curl --location 'http://localhost:4000/api/v1/event_analytics?from=2024-02-01&to=2025-02-28&event_name=subscription_activated'
