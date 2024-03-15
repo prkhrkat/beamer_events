@@ -21,11 +21,11 @@ defmodule BeamerEventsWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", BeamerEventsWeb do
+  scope "/", BeamerEventsWeb do
     pipe_through :api
-    get("/v1/user_analytics", UserController, :user_analytics)
-    post("/v1/events", EventController, :create_event)
-    get("v1/event_analytics", EventController, :event_analytics)
+    get("/user_analytics", UserController, :user_analytics)
+    post("/events", EventController, :create_event)
+    get("/event_analytics", EventController, :event_analytics)
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
