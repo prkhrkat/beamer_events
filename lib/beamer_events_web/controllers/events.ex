@@ -27,7 +27,15 @@ defmodule BeamerEventsWeb.EventController do
       end
 
     # Format the data
-    formatted_data = Events.list_event_analytics(to_date,from_date, params["event_name"])
+    formatted_data =
+      Events.list_event_analytics(to_date,from_date, params["event_name"])
+      |> Enum.map(fn e ->
+        %{
+          date: e.date |> NaiveDateTime.to_date(),
+          count: e.count,
+          unique_count: e.unique_count
+        }
+      end)
 
     # Return the data
     conn

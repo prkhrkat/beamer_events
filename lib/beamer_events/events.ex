@@ -130,20 +130,34 @@ defmodule BeamerEvents.Events do
     Repo.all(query)
   end
 
-  def list_event_analytics(to_date, from_date, event_name) do
-
-    {:ok,from_date} = NaiveDateTime.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
-    {:ok,to_date} = NaiveDateTime.new(to_date.year, to_date.month, to_date.day, 0, 0, 0)
+  def list_event_analytics(to_date, from_date, event_name) when is_nil(event_name) do
+    {:ok, from_date} = NaiveDateTime.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
+    {:ok, to_date} = NaiveDateTime.new(to_date.year, to_date.month, to_date.day, 0, 0, 0)
 
     query = from e in Event,
-        where: e.name in [^event_name] and e.start_time > ^from_date and
-        e.start_time < ^to_date,
-        group_by: fragment("date_trunc('day', ?)", e.start_time),
-        select: %{
-          date: fragment("date_trunc('day', ?)", e.start_time),
-          count: count("*"),
-          unique_count: count(e.user_id)
-        }
+            where: e.start_time > ^from_date and e.start_time < ^to_date,
+            group_by: fragment("date_trunc('day', ?)", e.start_time),
+            select: %{
+              date: fragment("date_trunc('day', ?)", e.start_time),
+              count: count("*"),
+              unique_count: fragment("count(DISTINCT ?)", e.user_id)
+            }
+    Repo.all(query)
+  end
+
+  def list_event_analytics(to_date, from_date, event_name) when is_binary(event_name) do
+    {:ok, from_date} = NaiveDateTime.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
+    {:ok, to_date} = NaiveDateTime.new(to_date.year, to_date.month, to_date.day, 0, 0, 0)
+
+    query = from e in Event,
+            where: e.name in [^event_name] and e.start_time > ^from_date and
+                   e.start_time < ^to_date,
+            group_by: fragment("date_trunc('day', ?)", e.start_time),
+            select: %{
+              date: fragment("date_trunc('day', ?)", e.start_time),
+              count: count("*"),
+              unique_count: fragment("count(DISTINCT ?)", e.user_id)
+            }
     Repo.all(query)
   end
 end

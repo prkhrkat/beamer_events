@@ -2,7 +2,7 @@ import Config
 
 # Configure your database
 config :beamer_events, BeamerEvents.Repo,
-  username: "prakhar",
+  username: "postgres",
   password: "postgres",
   hostname: "localhost",
   database: "beamer_events_dev",
