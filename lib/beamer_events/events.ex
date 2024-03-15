@@ -128,7 +128,6 @@ defmodule BeamerEvents.Events do
         order_by: [desc: max(e.inserted_at)]
 
     Repo.all(query)
-
   end
 
   def list_event_analytics(to_date, from_date, event_name) do
@@ -146,6 +145,5 @@ defmodule BeamerEvents.Events do
           unique_count: count(e.user_id)
         }
     Repo.all(query)
-
   end
 end
