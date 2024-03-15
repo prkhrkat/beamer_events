@@ -2,7 +2,43 @@ defmodule BeamerEventsWeb.EventController do
   use BeamerEventsWeb, :controller
   alias BeamerEvents.Events
 
+  @moduledoc """
+  Controller for handling event analytics requests.
+  """
 
+  @doc """
+  Retrieves event analytics data within a specified date range for a given event name.
+
+  ## Parameters
+
+  - `from` (required): Start date of the date range in "YYYY-MM-DD" format.
+  - `to` (required): End date of the date range in "YYYY-MM-DD" format.
+  - `event_name` (optional): String representing the name of the event to retrieve analytics for.
+
+  ## Returns
+
+  Returns a JSON response containing event analytics data for each date within the specified range.
+
+  Sample Response:
+    ```json
+    {
+      "data": [
+        {
+          "date": "2024-02-01",
+          "count": 123,
+          "unique_count": 100
+        },
+        {
+          "date": "2024-02-02",
+          "count": 456,
+          "unique_count": 200
+        }
+      ]
+    }
+    ```
+  If the provided date parameters are invalid, a 400 Bad Request response will be returned with an error message.
+
+  """
   def event_analytics(conn, params) do
     from_date =
       case date_validator(params["from"]) do
@@ -51,6 +87,48 @@ defmodule BeamerEventsWeb.EventController do
         {:error, "Invalid date format. Date must be in ISO 8601 format (YYYY-MM-DD)"}
     end
   end
+
+  @doc """
+  Creates a new event with the provided details.
+
+  ## Parameters
+
+  - `user_id` (required): Unique identifier of the user associated with the event.
+  - `event_time` (optional): Time when the event occurred in ISO 8601 format.
+  - `event_name` (required): Name of the event.
+  - `attributes` (required): Additional attributes associated with the event.
+
+  # sample input
+
+  ```json
+  {
+  "user_id": "user1",
+  "event_time": "2024-02-28T12:34:56Z",
+  "event_name": "subscription_activated",
+  "attributes": {
+    "plan": "pro",
+    "billing_interval": "year"
+    }
+  }
+  ```
+
+  ## Returns
+
+  Returns a JSON response indicating the success or failure of the event creation.
+
+  - If the event is created successfully, a 201 Created response is returned with a success message.
+  - If there are validation errors in the request parameters, a 400 Bad Request response is returned with an error message.
+
+  Response Example (Success):
+  ```json
+  {"message": "Event added successfully"}
+  ```
+
+  Response Example (Validation Error):
+  ```json
+  {"error": "Invalid parameters: <reason>"}
+  ```
+  """
 
 
   def create_event(conn, params) do
@@ -133,7 +211,7 @@ defmodule BeamerEventsWeb.EventController do
     end
   end
 
-  def parse_params(params) do
+  defp parse_params(params) do
     params =
         params
         |> Map.put("name", params["event_name"])
